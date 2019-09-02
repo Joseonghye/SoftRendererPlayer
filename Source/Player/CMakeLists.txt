@@ -15,14 +15,14 @@ file(GLOB WINDOWS_RESOURCE_FILES
 	${PROJECT_SOURCE_DIR}/Res/*.rc
 	${PROJECT_SOURCE_DIR}/Res/*.ico
 	)
-	
+
 set_source_files_properties(${COMMON_SOURCE_FILES} PROPERTIES HEADER_FILE_ONLY FALSE)
 set_source_files_properties(${WINDOWS_RESOURCE_FILES} PROPERTIES HEADER_FILE_ONLY FALSE)
 
 set(ALL_FILES
     ${COMMON_SOURCE_FILES}
     ${WINDOWS_RESOURCE_FILES})
-	
+
 foreach(FILE ${ALL_FILES})
     # make rel path
 	file(RELATIVE_PATH REL_PATH "${PROJECT_SOURCE_DIR}" "${FILE}")
@@ -42,10 +42,14 @@ endforeach()
 ################################################################################	
 include_directories(
     ${PROJECT_SOURCE_DIR}
+    ${RUNTIME_MODULE_DIR}/Math/Public
+    ${RUNTIME_MODULE_DIR}/Engine/Public
+    ${RUNTIME_MODULE_DIR}/Renderer/Public
 	)
-	
+
+
 ################################################################################
-# Precompiled Headers #컴파일 시간을 줄이기 위해 사용 #자주 변하지않는 것들을 하나의 컴파일에 넣어둠 
+# Precompiled Headers
 ################################################################################
 set(ARG_PCH_HEADER WindowsPrecompiled.h)
 set(ARG_PCH_SOURCE WindowsPrecompiled.cpp)
@@ -63,7 +67,7 @@ endforeach(FILE)
 ################################################################################
 # Excutable Output Setting
 ################################################################################
-add_executable(${PROJECT_NAME} WIN32 ${ALL_FILES}) #add_executable 현재 모든 파이릉ㄹ 가지고 프로젝트이름으로 win32 프로그램을 만들겠다 
+add_executable(${PROJECT_NAME} WIN32 ${ALL_FILES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	PREFIX ""
@@ -72,6 +76,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	)
 	
 ################################################################################
-# Import Library  ## 외부모듈사용 
+# Import Library
 ################################################################################
-target_link_libraries(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} MathModule RendererModule EngineModule)
+
+
