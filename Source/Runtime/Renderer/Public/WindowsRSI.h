@@ -23,6 +23,9 @@ public:
 	virtual void EndFrame() override;
 
 	virtual void DrawScreenPoint(const ScreenPoint& InPoint, const LinearColor& InColor) override;
+	virtual void SetVertexBuffer(VertexData* InVertexData) override;
+	virtual void SetIndexBuffer(const int* InIndexData) override;
+	virtual void DrawPrimitive(UINT InVertexSize, UINT InIndexSize) override;
 
 private:
 

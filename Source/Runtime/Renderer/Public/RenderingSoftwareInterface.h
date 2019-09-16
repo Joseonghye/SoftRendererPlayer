@@ -4,6 +4,13 @@
 #include "DisplaySetting.h"
 #include "LinearColor.h"
 
+struct VertexData
+{
+	Vector2 pos;
+	LinearColor color = LinearColor::Error;
+	Vector2 uv;
+};
+
 class RenderingSoftwareInterface
 {
 public:
@@ -17,4 +24,12 @@ public:
 	virtual void EndFrame() = 0;
 
 	virtual void DrawScreenPoint(const ScreenPoint& InPoint,const LinearColor& InColor) = 0;
+
+	virtual void SetVertexBuffer(VertexData* InVertexData) = 0;
+	virtual void SetIndexBuffer(const int* InIndexData) = 0;
+	virtual void DrawPrimitive(UINT InVertexSize, UINT InIndexSize) = 0;
+
+public:
+	VertexData* verties;
+	const int* indices;
 };
