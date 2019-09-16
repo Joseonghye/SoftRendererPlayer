@@ -65,31 +65,28 @@ void SoftRenderer::Update()
 			}
 		}*/
 
-		Vector2 A(0.f,-2.f);
-		Vector2 B(-2.f, 1.f);
-		Vector2 C(2.f, 2.f);
-		
-		Vector2 minPos;
-		Vector2 maxPos;
-		
+		Vector2 A(0.0f, 100.0f);
+		Vector2 B(-100.0f, -100.0f);
+		Vector2 C(100.0f, -100.0f);
+
+		Vector2 minPos = A;
+		Vector2 maxPos = A;
+
 		if (A.X > B.X)
 		{
-			maxPos.X = A.X;
 			minPos.X = B.X;
-		}else 
+		}
+		else
 		{
 			maxPos.X = B.X;
-			minPos.X = A.X;
 		}
 		if (A.Y > B.Y)
 		{
-			maxPos.Y = A.Y;
 			minPos.Y = B.Y;
 		}
 		else
 		{
-			maxPos.Y = B.Y;
-			minPos.Y = A.Y;
+			maxPos.Y = B.Y;	
 		}
 
 		if (minPos.X > C.X) minPos.X = C.X;
@@ -100,7 +97,7 @@ void SoftRenderer::Update()
 
 		Vector2 u = B - A;
 		Vector2 v = C - A;
-		
+
 		float UU = u.Dot(u);
 		float UV = u.Dot(v);
 		float VV = v.Dot(v);
@@ -117,18 +114,18 @@ void SoftRenderer::Update()
 				float UW = u.Dot(w);
 				float VW = v.Dot(v);
 
-				float s = (VV* UW - UV * VW) * denominator;
-				float t = (UU*VW - UV * UW) * denominator;
+			//	float s = (VV* UW - UV * VW) * denominator;
+			//	float t = (UU*VW - UV * UW) * denominator;
 
-				if (s >= 0 && t >= 0 && ((s + t) <= 1))
+				float s = ((u.Dot(w) * v.Dot(v)) - (w.Dot(v) * u.Dot(v))) / ((u.Dot(u) * v.Dot(v)) - (u.Dot(v) * u.Dot(v)));
+				float t = ((w.Dot(v) * u.Dot(u)) - (u.Dot(w) * u.Dot(v))) / ((u.Dot(u) * v.Dot(v)) - (u.Dot(v) * u.Dot(v)));
+
+				if ((0 <= s && s <= 1) && (0 <= t && t <= 1))
 				{
-					RSI->DrawScreenPoint(ScreenPoint(P), color);
+					RSI->DrawScreenPoint(ScreenPoint(x,y), color);
 				}
 			}
 		}
-
-
-
 		RSI->EndFrame();
 	}
 }
