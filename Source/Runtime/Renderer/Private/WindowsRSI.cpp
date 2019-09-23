@@ -36,6 +36,36 @@ void WindowsRSI::DrawScreenPoint(const ScreenPoint & InPoint, const LinearColor 
 	PutPixel(InPoint,InColor.ToColor32());
 }
 
+void WindowsRSI::DrawVerticalLine(int InX, const LinearColor & InColor)
+{
+	int height = WindowsGDI::ScreenSize.Y;
+	int width = WindowsGDI::ScreenSize.X;
+
+	Color32 color = InColor.ToColor32();
+	Color32* dest = ScreenBuffer;
+
+	int xIndex = InX + Math::FloorToInt(((float)width - 1.f)*0.5f);
+
+	for (int y = 0; y < height; y++)
+	{
+	//	WindowsGDI::ScreenBuffer[InX + width * y] = InColor.ToColor32(true);
+		*(dest + xIndex) = color;
+		dest += ScreenSize.X;
+	}
+
+}
+
+void WindowsRSI::DrawHorizontalLine(int InY, const LinearColor & InColor)
+{
+	int width = WindowsGDI::ScreenSize.X;
+
+
+	for (int x = 0; x < width; x++)
+	{
+		WindowsGDI::ScreenBuffer[InY*width + x] = InColor.ToColor32(true);
+	}
+}
+
 void WindowsRSI::SetVertexBuffer(VertexData * InVertexData)
 {
 	verties = InVertexData;
