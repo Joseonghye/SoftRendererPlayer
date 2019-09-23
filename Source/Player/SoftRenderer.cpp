@@ -31,6 +31,26 @@ void SoftRenderer::Update()
 
 		//RenderCode
 
+
+		//Grid Line
+		ScreenPoint screenSize = DisplaySetting::Inst().GetSize();
+		int halfX = Math::FloorToInt(((float)screenSize.X - 1.f)*0.5f);
+		int halfY = Math::FloorToInt(((float)screenSize.Y - 1.f)*0.5f);
+		
+		static int GridSize = 10;
+		LinearColor color(0.5f, 0.5f, 0.5f);
+
+	/*	for (int x = 10; x <halfX; x += GridSize)
+		{
+				RSI->DrawVerticalLine(x, color);
+				RSI->DrawVerticalLine(-x, color);
+		}*/
+		for (int y = 10; y < halfY; y += GridSize)
+		{
+			RSI->DrawHorizontalLine(y, color);
+			RSI->DrawHorizontalLine(-y, color);
+		}
+
 		VertexData v[4];
 		v[0].pos = Vector2(100.0f, 100.0f);
 		v[0].color = LinearColor(1.0f, 0.0f, 0.0f);
@@ -52,6 +72,9 @@ void SoftRenderer::Update()
 		RSI->SetVertexBuffer(v);
 		RSI->SetIndexBuffer(i);
 		RSI->DrawPrimitive(4, 6);
+
+		
+
 
 		RSI->EndFrame();
 	}
