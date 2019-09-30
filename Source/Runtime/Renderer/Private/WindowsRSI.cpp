@@ -57,13 +57,133 @@ void WindowsRSI::DrawVerticalLine(int InX, const LinearColor & InColor)
 
 void WindowsRSI::DrawHorizontalLine(int InY, const LinearColor & InColor)
 {
-	int width = WindowsGDI::ScreenSize.X;
-
-
-	for (int x = 0; x < width; x++)
+	Color32 color = InColor.ToColor32();
+	Color32* dest = ScreenBuffer;
+	int startIndex = Math::FloorToInt(((float)ScreenSize.Y - 1.f) * 0.5f) - InY;
+	dest = dest + startIndex * ScreenSize.X;
+	for (int x = 0; x < ScreenSize.X; x++)
 	{
-		WindowsGDI::ScreenBuffer[InY*width + x] = InColor.ToColor32(true);
+		*dest = color;
+		dest++;
 	}
+}
+
+void WindowsRSI::DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, const LinearColor& InColor)
+{
+	int x = InStartPos.X;
+	int y = InStartPos.Y;
+
+	bool chk = false;
+	int w, h;
+	if (InStartPos.X < InEndPos.X) {
+		if (InStartPos.Y < InEndPos.Y) {
+			w = InEndPos.X - InStartPos.X;
+			h = InEndPos.Y - InStartPos.Y;
+		}
+		else
+		{
+			 w = InEndPos.X - InStartPos.X;
+			 h = InStartPos.Y - InEndPos.Y;
+		}
+	}
+	else {
+		chk = true;
+		w = InStartPos.X - InEndPos.X;
+		h = InEndPos.Y - InStartPos.Y;
+	}
+
+	
+	if (w < 0) return;
+	if (h < 0)return;
+
+	int a = h / w;
+
+	/*if (a <= 1) {
+		int XF = 2 * h - w;
+
+		int XdF1 = 2 * h;
+		int XdF2 = 2 * (h - w);
+
+		for (; x <= InEndPos.X; x++)
+		{
+			ScreenPoint p(x, y);
+			DrawScreenPoint(p, InColor);
+
+			if (XF < 0)
+				XF += XdF1;
+			else
+			{
+				y++;
+				XF += XdF2;
+			}
+		}
+	}
+	else
+	{*/
+
+	if (a < 0)
+	{
+		int F = h - (2 * w);
+		int dF1 = -2 * w;
+		int dF2 = 2 * (h - w);
+		for (; y >= InEndPos.Y; y--)
+		{
+
+			ScreenPoint p(x, y);
+			DrawScreenPoint(p, InColor);
+
+			if (F < 0)
+				F -= dF1;
+			else
+			{
+				x++;
+				F -= dF2;
+			}
+		}
+	}
+
+	else {
+		if (!chk) {
+			int F = h - 2 * w;
+
+			int dF1 = 2 * w;
+			int dF2 = 2 * (w - h);
+			for (; y <= InEndPos.Y; y++)
+			{
+
+				ScreenPoint p(x, y);
+				DrawScreenPoint(p, InColor);
+
+				if (F < 0)
+					F += dF1;
+				else
+				{
+					x++;
+					F += dF2;
+				}
+			}
+		}
+		else {
+			int F = -h + 2 * w;
+			int dF1 = 2 * w;
+			int dF2 = 2 * (w - h);
+			for (; y <= InEndPos.Y; y++)
+			{
+
+				ScreenPoint p(x, y);
+				DrawScreenPoint(p, InColor);
+
+				if (F < 0)
+					F += dF1;
+				else
+				{
+					x--;
+					F += dF2;
+				}
+			}
+		}
+	}
+	
 }
 
 void WindowsRSI::SetVertexBuffer(VertexData * InVertexData)

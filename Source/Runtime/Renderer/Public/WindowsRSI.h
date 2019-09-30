@@ -25,6 +25,7 @@ public:
 	virtual void DrawScreenPoint(const ScreenPoint& InPoint, const LinearColor& InColor) override;
 	virtual void DrawVerticalLine(int InX, const LinearColor& InColor) override;
 	virtual void DrawHorizontalLine(int InY, const LinearColor& InColor) override;
+	virtual void DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, const LinearColor& InColor) override;
 
 	virtual void SetVertexBuffer(VertexData* InVertexData) override;
 	virtual void SetIndexBuffer(const int* InIndexData) override;
