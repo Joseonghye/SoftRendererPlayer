@@ -76,21 +76,28 @@ void WindowsRSI::DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, co
 	bool chk = false;
 	int w, h;
 	if (InStartPos.X < InEndPos.X) {
+		 w = InEndPos.X - InStartPos.X;
 		if (InStartPos.Y < InEndPos.Y) {
-			w = InEndPos.X - InStartPos.X;
 			h = InEndPos.Y - InStartPos.Y;
 		}
 		else
 		{
-			 w = InEndPos.X - InStartPos.X;
 			 h = InStartPos.Y - InEndPos.Y;
 		}
 	}
 	else {
 		chk = true;
 		w = InStartPos.X - InEndPos.X;
-		h = InEndPos.Y - InStartPos.Y;
+		if (InStartPos.Y < InEndPos.Y) {
+			
+			h = InEndPos.Y - InStartPos.Y;
+		}
+		else
+		{
+			h = InStartPos.Y - InEndPos.Y;
+		}
 	}
+		
 
 	
 	if (w < 0) return;
@@ -122,27 +129,50 @@ void WindowsRSI::DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, co
 	{*/
 
 	if (a < 0)
-	{
-		int F = h - (2 * w);
-		int dF1 = -2 * w;
-		int dF2 = 2 * (h - w);
-		for (; y >= InEndPos.Y; y--)
-		{
-
-			ScreenPoint p(x, y);
-			DrawScreenPoint(p, InColor);
-
-			if (F < 0)
-				F -= dF1;
-			else
+	{// 오른쪽 위 / 왼쪽 아래
+		if(!chk){
+			int F = h - (2 * w);
+			int dF1 = -2 * w;
+			int dF2 = 2 * (h - w);
+			for (; y >= InEndPos.Y; y--)
 			{
-				x++;
-				F -= dF2;
+
+				ScreenPoint p(x, y);
+				DrawScreenPoint(p, InColor);
+
+				if (F < 0)
+					F -= dF1;
+				else
+				{
+					x++;
+					F -= dF2;
+				}
+			}
+		}
+		else
+		{
+			int F = -h - (2 * w);
+			int dF1 = -2 * w;
+			int dF2 = -2 * (h + w);
+			for (; y >= InEndPos.Y; y--)
+			{
+
+				ScreenPoint p(x, y);
+				DrawScreenPoint(p, InColor);
+
+				if (F < 0)
+					F -= dF1;
+				else
+				{
+					x++;
+					F -= dF2;
+				}
 			}
 		}
 	}
 
 	else {
+		//오른쪽 아래 / 왼쪽 위
 		if (!chk) {
 			int F = h - 2 * w;
 
