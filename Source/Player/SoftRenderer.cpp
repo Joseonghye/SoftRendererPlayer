@@ -84,6 +84,9 @@ void SoftRenderer::Update()
 		
 		RSI->DrawLine(Vector2(50.0f, -50.0f), Vector2(100.f, -100.f), LinearColor(0.f, 1.f, 1.f));
 		RSI->DrawLine(Vector2(30.f, -30.f), Vector2(100.f, -300.f), LinearColor(0.f, 0.f, 1.f));
+		
+		RSI->DrawLine(Vector2(-50.0f, -50.0f), Vector2(-100.f, -100.f), LinearColor(0.f, 1.f, 1.f));
+		RSI->DrawLine(Vector2(-30.f, -30.f), Vector2(-100.f, -300.f), LinearColor(0.f, 0.f, 1.f));
 
 
 		RSI->EndFrame();
