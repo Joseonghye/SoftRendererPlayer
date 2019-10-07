@@ -31,6 +31,8 @@ public:
 	virtual void SetVertexBuffer(VertexData* InVertexData) = 0;
 	virtual void SetIndexBuffer(const int* InIndexData) = 0;
 	virtual void DrawPrimitive(UINT InVertexSize, UINT InIndexSize) = 0;
+	virtual void DrawTopFlatTriangle(VertexData* tvs, bool DrawLastLine) = 0;
+	virtual void DrawBottomFlatTriangle(VertexData* tvs) = 0;
 
 public:
 	VertexData* verties;

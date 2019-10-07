@@ -29,6 +29,8 @@ public:
 
 	virtual void SetVertexBuffer(VertexData* InVertexData) override;
 	virtual void SetIndexBuffer(const int* InIndexData) override;
+	virtual void DrawBottomFlatTriangle(VertexData* tvs) override;
+	virtual void DrawTopFlatTriangle(VertexData* tvs, bool DrawLastLine) override;
 	virtual void DrawPrimitive(UINT InVertexSize, UINT InIndexSize) override;
 
 private:
