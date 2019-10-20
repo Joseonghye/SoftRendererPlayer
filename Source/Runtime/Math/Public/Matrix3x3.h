@@ -7,8 +7,8 @@ struct Matrix3x3
 public:
 	Matrix3x3();
 	Matrix3x3(const Vector3& InCol0, const Vector3& InCol1,  const Vector3& InCol2);
-	Matrix3x3(float In00, float In01,float In02, float In10, float In11, float In12);
-
+	Matrix3x3(float In00, float In01,float In02, float In10, float In11, float In12, float In20, float In21, float In22);
+	
 	FORCEINLINE void SetIdentity();
 	FORCEINLINE void SetRotation(float InRadian);
 	FORCEINLINE void SetScale(Vector3 InScale);
