@@ -21,18 +21,25 @@ public:
 	virtual void Clear(const LinearColor& InClearColor) override;
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
+	virtual void DrawScreenPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor) override;
 
-	virtual void DrawScreenPoint(const ScreenPoint& InPoint, const LinearColor& InColor) override;
-	virtual void DrawVerticalLine(int InX, const LinearColor& InColor) override;
-	virtual void DrawHorizontalLine(int InY, const LinearColor& InColor) override;
-	virtual void DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, const LinearColor& InColor) override;
+	virtual int SetTexture(RSITexture& InRSITexture) override;
+	LinearColor GetTextureSample(const Vector2& InUV);
 
 	virtual void SetVertexBuffer(VertexData* InVertexData) override;
 	virtual void SetIndexBuffer(const int* InIndexData) override;
-	virtual void DrawBottomFlatTriangle(VertexData* tvs) override;
-	virtual void DrawTopFlatTriangle(VertexData* tvs, bool DrawLastLine) override;
 	virtual void DrawPrimitive(UINT InVertexSize, UINT InIndexSize) override;
 
-private:
+	virtual void DrawLine(const Vector2& InStartPos, const Vector2& InEndPos, const LinearColor& InColor);
+	virtual void DrawVerticalLine(int InX, const LinearColor& InColor) override;
+	virtual void DrawHorizontalLine(int InY, const LinearColor& InColor) override;
 
+	void DrawTopFlatTriangle(VertexData* tvs, bool DrawLastLine = true);
+	void DrawBottomFlatTriangle(VertexData* tvs);
+
+private:
+	VertexData* VertexBuffer;
+	const int* IndexBuffer;
+	RSITexture  MainTexture;
+	bool HasTexture = false;
 };

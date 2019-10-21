@@ -1,3 +1,4 @@
+
 #include "Precompiled.h"
 #include "TriangleRasterizer.h"
 
@@ -14,32 +15,32 @@ TriangleRasterizer::TriangleRasterizer(VertexData InVertex0, VertexData InVertex
 
 	bHasColor = true;
 	bHasUV = true;
-
+		
 	RecalcBounds();
 }
 
 void TriangleRasterizer::RecalcBounds()
 {
-
-	Vector2 minPos = Vector2(INFINITY, INFINITY);
-	Vector2 maxPos = Vector2(-INFINITY, -INFINITY);
+	// screen bounds
+	Vector2 sbbMin2D = Vector2(INFINITY, INFINITY);
+	Vector2 sbbMax2D = Vector2(-INFINITY, -INFINITY);
 
 	for (int i = 0; i < 3; i++)
 	{
-		if (VertexBuffer[i].pos.X < minPos.X) minPos.X = VertexBuffer[i].pos.X;
-		if (VertexBuffer[i].pos.Y < minPos.Y) minPos.Y = VertexBuffer[i].pos.Y;
-		if (VertexBuffer[i].pos.X > maxPos.X) maxPos.X = VertexBuffer[i].pos.X;
-		if (VertexBuffer[i].pos.Y > maxPos.Y) maxPos.Y = VertexBuffer[i].pos.Y;
+		if (VertexBuffer[i].Position.X < sbbMin2D.X) sbbMin2D.X = VertexBuffer[i].Position.X;
+		if (VertexBuffer[i].Position.Y < sbbMin2D.Y) sbbMin2D.Y = VertexBuffer[i].Position.Y;
+		if (VertexBuffer[i].Position.X > sbbMax2D.X) sbbMax2D.X = VertexBuffer[i].Position.X;
+		if (VertexBuffer[i].Position.Y > sbbMax2D.Y) sbbMax2D.Y = VertexBuffer[i].Position.Y;
 	}
 
-	U = VertexBuffer[1].pos - VertexBuffer[0].pos;
-	V = VertexBuffer[2].pos - VertexBuffer[0].pos;
+	UVector = VertexBuffer[1].Position - VertexBuffer[0].Position;
+	VVector = VertexBuffer[2].Position - VertexBuffer[0].Position;
+	DotUU = UVector.Dot(UVector);
+	DotUV = UVector.Dot(VVector);
+	DotVV = VVector.Dot(VVector);
+	InvDenom = 1.f / (DotUU * DotVV - DotUV * DotUV);
 
-	UU = U.Dot(U);
-	UV = U.Dot(V);
-	VV = V.Dot(V);
-	InvDenom = 1.f / (UU * VV - UV * UV);
-
-	TopLeft = ScreenPoint(minPos);
-	BottomRight = ScreenPoint(maxPos);
+	TopLeft = ScreenPoint(sbbMin2D);
+	BottomRight = ScreenPoint(sbbMax2D);
 }
+
