@@ -21,7 +21,6 @@ public:
 	FORCEINLINE bool operator==(const LinearColor& InColor) const;
 	FORCEINLINE bool operator!=(const LinearColor& InColor) const;
 
-	static const float sRGBToLinearTable[256];
 	static const float OneOver255;
 	static const LinearColor Error;
 
