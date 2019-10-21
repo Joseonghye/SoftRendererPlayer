@@ -1,7 +1,8 @@
 #pragma once
 
 #include "WindowsRSI.h"
-
+#include "InputManager.h"
+#include "SoftRenderer.h"
 class SoftRenderer
 {
 public:
@@ -22,16 +23,15 @@ public:
 public:
 	void SetRenderMode(RenderMode InRenderMode) { CurrentRenderMode = InRenderMode; }
 	RenderMode GetRenderMode() const { return CurrentRenderMode; }
+	InputManager& GetInputManager() { return InputManager; }
+
+	float GetFrameFPS() const { return FrameFPS; }
+	float GetAverageFPS() const { return AverageFPS; }
+
 	void Initialize();
 	void Shutdown();
-	void Update();
-
-	float GetFrameFPS() { return FrameFPS;}
-	float GetAverageFPS() { return FrameCount == 0 ? 0.0f : FrameCount / ElapsedTime; }
-	float GetElapsedTime() const { return ElapsedTime; }
-	int GetFrameCount() const { return FrameCount; }	
-
 	void PreUpdate();
+	void Update();
 	void PostUpdate();
 
 private:
@@ -40,18 +40,18 @@ private:
 
 	RenderMode CurrentRenderMode = RenderMode::TWO;
 
-	WindowsRSI* RSI = nullptr;
+	RenderingSoftwareInterface* RSI = nullptr;
 
-//	double MilliSecFrequency = 0;
-//	double FrameMilliSec = 0;
-//	float FrameSec = 0;
-	float FrameFPS = 0;
-	float AverageFPS = 0;
-	float ElapsedTime = 0;
-	LONGLONG FrameTimeStamp = 0;
+	// Performace counter
 	LONGLONG StartTimeStamp = 0;
-	LONGLONG CyclesPerMilliSeconds = 0;
-	LONGLONG FrameTime = 0;
-	LONGLONG ElapsedTimeInMs = 0;
-	int FrameCount = 0;
+	LONGLONG FrameTimeStamp = 0;
+	long FrameCount = 0;
+	float CyclesPerMilliSeconds = 0.f;
+	float FrameTime = 0.f;
+	float ElapsedTime = 0.f;
+	float AverageFPS = 0.f;
+	float FrameFPS = 0.f;
+
+	InputManager InputManager;
+	Texture MainTexture;
 };
