@@ -76,14 +76,15 @@ void SoftRenderer::Update()
 		float cos, sin = 0.f;
 		Math::GetSinCos(cos, sin, 30.f);
 
-		static float moveSpeed = 100.f;
-		static float rotateSpeed = 180.f;
-
-		float sineWave0To1 = (sinf(ElapsedTime / 1000 * Math::TwoPI) + 1) * 0.5f;
+	/*	float sineWave0To1 = (sinf(ElapsedTime / 1000 * Math::TwoPI) + 1) * 0.5f;
 		float minScale = 0.8f;
 		float maxScale = 1.6f;
-		float currentScale = 0.5f + sineWave0To1 * (maxScale - minScale);
+		float currentScale = 0.5f + sineWave0To1 * (maxScale - minScale);*/
 
+		static float moveSpeed = 100.f;
+		static float rotateSpeed = 180.f;
+		float currentScale = 100.f;
+		 
 		Vector2 deltaMove = Vector2(
 			InputManager.GetXAxis() * moveSpeed, 
 			InputManager.GetYAxis() * moveSpeed) * deltaTime;
@@ -94,24 +95,26 @@ void SoftRenderer::Update()
 		static GameObject2D quad;
 		quad.GetTransform().SetScale(Vector2::One * currentScale);
 		quad.GetTransform().AddRotation(rotateSpeed * deltaTime);
-		Matrix3x3 fMat = camera.GetTransform().GetViewMatrix() * quad.GetTransform().GetModelingMatrix();
+		Matrix3x3 fMat = camera.GetTransform().GetViewMatrix() * quad.GetTransform().GetTRS();
 
 		// Define Quad Data
 		const int vertexCount = 4;
 		VertexData v[vertexCount];
 		v[0].Position = Vector2(-0.5f, -0.5f);
 		v[0].Color = LinearColor(1.0f, 0.0f, 0.0f);
-		v[0].UV = Vector2(0.f, 0.f);
+		v[0].UV = Vector2(0.125f, 0.25f);
+
 		v[1].Position = Vector2(-0.5f, 0.5f);
 		v[1].Color = LinearColor(1.0f, 0.0f, 0.0f);
-		v[1].UV = Vector2(0.f, 1.f);
+		v[1].UV = Vector2(0.125f, 0.125f);
+
 		v[2].Position = Vector2(0.5f, 0.5f);
 		v[2].Color = LinearColor(1.0f, 0.0f, 0.0f);
-		v[2].UV = Vector2(1.f, 1.f);
+		v[2].UV = Vector2(0.25f, 0.125f);
+
 		v[3].Position = Vector2(0.5f, -0.5f);
 		v[3].Color = LinearColor(1.0f, 0.0f, 0.0f);
-		v[3].UV = Vector2(1.f, 0.f);
-
+		v[3].UV = Vector2(0.25f, 0.25f);
 		const int indexCount = 6;
 		int i[indexCount] = { 0, 1, 2, 0, 2, 3 };
 
@@ -134,7 +137,7 @@ void SoftRenderer::Update()
 	//	Matrix3x3 fMat = Camera.GetTransform().GetViewMatrix() * quad.GetTransform().GetTRS();
 
 		// Define Mesh Data
-		/*
+	/*
 		VertexData v[9];
 		v[0].Position = Vector2(-150.0f, -100.0f);
 		v[0].Color = LinearColor(1.0f, 0.0f, 0.0f);
@@ -157,10 +160,12 @@ void SoftRenderer::Update()
 		v[8].Position = Vector2(0.0f, -100.0f);
 		v[8].Color = LinearColor(0.0f, 0.0f, 1.0f);
 
+		
 		for (int i = 0; i < 9; ++i)
 		{
 			v[i].Position = fMat * v[i].Position;
 		}
+		
 
 		int i[9];
 		i[0] = 0;
