@@ -37,6 +37,7 @@ public:
 		return VertexBuffer[0].Color * oneMinusST + VertexBuffer[1].Color * st.X + VertexBuffer[2].Color * st.Y;
 	}
 
+	//무게 중심 좌표계
 	FORCEINLINE Vector2 GetBaryCentricCoord(const Vector2& InScreenPosition) const
 	{
 		Vector2 w = InScreenPosition - Vector2(VertexBuffer[0].Position.X, VertexBuffer[0].Position.Y);

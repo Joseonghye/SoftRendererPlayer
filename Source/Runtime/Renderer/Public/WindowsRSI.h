@@ -24,7 +24,6 @@ public:
 	virtual void DrawScreenPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor) override;
 
 	virtual int SetTexture(RSITexture& InRSITexture) override;
-	LinearColor GetTextureSample(const Vector2& InUV);
 
 	virtual void SetVertexBuffer(VertexData* InVertexData) override;
 	virtual void SetIndexBuffer(const int* InIndexData) override;
@@ -36,6 +35,9 @@ public:
 
 	void DrawTopFlatTriangle(VertexData* tvs, bool DrawLastLine = true);
 	void DrawBottomFlatTriangle(VertexData* tvs);
+
+	LinearColor DrawPoint(ScreenPoint& InScreenPoint, LinearColor& InColor);
+	LinearColor GetTextureSample(const Vector2& InUV);
 
 private:
 	VertexData* VertexBuffer;

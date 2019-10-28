@@ -48,14 +48,22 @@ int WindowsRSI::SetTexture(RSITexture & InRSITexture)
 	return 0;
 }
 
+LinearColor WindowsRSI::DrawPoint(ScreenPoint & InScreenPoint, LinearColor & InColor)
+{
+	return LinearColor();
+}
+
 LinearColor WindowsRSI::GetTextureSample(const Vector2 & InUV)
 {
 	UINT width = MainTexture.Width;
 	UINT height = MainTexture.Height;
+
 	UINT pixelX = Math::FloorToInt(InUV.X * width);
 	UINT pixelY = Math::FloorToInt(InUV.Y * height);
+
 	pixelX %= width;
 	pixelY %= height;
+
 	UINT textureIndex = width * pixelY + pixelX;
 	return MainTexture.TextureBuffer[textureIndex];
 }
@@ -81,130 +89,168 @@ void WindowsRSI::DrawPrimitive(UINT InVertexSize, UINT InIndexSize)
 	UINT triangleCount = (int)(InIndexSize / 3);
 	for (UINT ti = 0; ti < triangleCount; ti++)
 	{
-		//	VertexData tv[3] = { 
-		//		VertexBuffer[IndexBuffer[ti * 3]], 
-		//		VertexBuffer[IndexBuffer[ti * 3 + 1]], 
-		//		VertexBuffer[IndexBuffer[ti * 3 + 2]] 
-		//	};
-		//	VertexData temp;
+		VertexData tv[3] = {
+			VertexBuffer[IndexBuffer[ti * 3]],
+			VertexBuffer[IndexBuffer[ti * 3 + 1]],
+			VertexBuffer[IndexBuffer[ti * 3 + 2]]
+		};
+		VertexData temp;
 
 		//	// TO-DO. 퇴화 삼각형인지 식별.
 
-		//	// 1. 삼각형 정점 소팅
-		//	// 1-1. 0번과 1번의 Y값 비교
-		//	if (tv[0].Position.Y == tv[1].Position.Y)
-		//	{
-		//		// X 값을 비교.
-		//		if (tv[0].Position.X > tv[1].Position.X)
-		//		{
-		//			// 0번과 1번을 Swap
-		//			temp = tv[0];
-		//			tv[0] = tv[1];
-		//			tv[1] = temp;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (tv[0].Position.Y < tv[1].Position.Y)
-		//		{
-		//			// 0번과 1번을 Swap
-		//			temp = tv[0];
-		//			tv[0] = tv[1];
-		//			tv[1] = temp;
-		//		}
-		//	}
+			// 1. 삼각형 정점 소팅
+		bool normal = false;
+		if (tv[0].Position.Y < tv[1].Position.Y)
+		{
+			if (tv[0].Position.Y < tv[2].Position.Y)
+			{
+				if (tv[1].Position.Y < tv[2].Position.Y)
+				{
+					temp = tv[0];
+					tv[0] = tv[2];
+					tv[2] = tv[0];
+				}
+				else if (tv[1].Position.Y > tv[2].Position.Y)
+				{
+					temp = tv[0];
+					tv[0] = tv[1];
+					tv[1] = tv[2];
+					tv[2] = temp;
+				}
+				else
+				{
+					if (tv[1].Position.X < tv[2].Position.X)
+					{
+						temp = tv[0];
+						tv[0] = tv[1];
+						tv[1] = tv[2];
+						tv[2] = temp;
+					}
+					else
+					{
+						temp = tv[0];
+						tv[0] = tv[2];
+						tv[2] = temp;
+					}
+				}
+			}
+			else if (tv[0].Position.Y > tv[2].Position.Y)
+			{
+				temp = tv[0];
+				tv[0] = tv[1];
+				tv[1] = temp;
+			}
+			else
+			{
+				normal = true;
+				if (tv[0].Position.X < tv[2].Position.X)
+				{
+					temp = tv[0];
+					tv[0] = tv[1];
+					tv[1] = tv[2];
+					tv[2] = temp;
+				}
+				else
+				{
+					temp = tv[0];
+					tv[0] = tv[1];
+					tv[1] = temp;
+				}
+			}
+		}
+		else if (tv[0].Position.Y > tv[1].Position.Y)
+		{
+			if (tv[1].Position.Y < tv[2].Position.Y)
+			{
+				temp = tv[1];
+				tv[1] = tv[2];
+				tv[2] = temp;
+			}
+			else if (tv[1].Position.Y == tv[2].Position.Y)
+			{
+				normal = true;
+				if (tv[1].Position.X > tv[2].Position.X)
+				{
+					temp = tv[1];
+					tv[1] = tv[2];
+					tv[2] = temp;
+				}
+			}
+		}
+		else
+		{
+			if (tv[0].Position.X > tv[1].Position.X)
+			{
+				temp = tv[0];
+				tv[0] = tv[1];
+				tv[1] = temp;
+			}
 
-		//	if (tv[1].Position.Y == tv[2].Position.Y)
-		//	{
-		//		// X 값을 비교.
-		//		if (tv[1].Position.X > tv[2].Position.X)
-		//		{
-		//			// 1번과 2번을 Swap
-		//			temp = tv[1];
-		//			tv[1] = tv[2];
-		//			tv[2] = temp;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (tv[1].Position.Y < tv[2].Position.Y)
-		//		{
-		//			// 1번과 2번을 Swap
-		//			temp = tv[1];
-		//			tv[1] = tv[2];
-		//			tv[2] = temp;
-		//		}
-		//	}
+			if (tv[0].Position.Y < tv[2].Position.Y)
+			{
+				normal = true;
+				temp = tv[0];
+				tv[0] = tv[2];
+				tv[2] = tv[1];
+				tv[1] = temp;
+			}
+		}
 
+		// 2. 삼각형 패턴 파악 ( Top-Flat , Bottom-Flat, Normal )
+		if (normal)
+		{
+			DrawBottomFlatTriangle(tv);
+		}
+		else
+		{
+			if (tv[0].Position.Y == tv[1].Position.Y)
+			{
+				DrawTopFlatTriangle(tv);
+			}
+			else
+			{
+				VertexData newV = tv[1];
+				float height = tv[0].Position.Y - tv[2].Position.Y;
+				float width = tv[2].Position.X - tv[0].Position.X;
 
-		//	if (tv[0].Position.Y == tv[1].Position.Y)
-		//	{
-		//		// X 값을 비교.
-		//		if (tv[0].Position.X > tv[1].Position.X)
-		//		{
-		//			// 0번과 1번을 Swap
-		//			temp = tv[0];
-		//			tv[0] = tv[1];
-		//			tv[1] = temp;
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (tv[0].Position.Y < tv[1].Position.Y)
-		//		{
-		//			// 0번과 1번을 Swap
-		//			temp = tv[0];
-		//			tv[0] = tv[1];
-		//			tv[1] = temp;
-		//		}
-		//	}
+				if (height == 0.0f)
+				{
+					return;
+				}
 
-		//	// 2. 삼각형 패턴 파악 ( Top-Flat , Bottom-Flat, Normal )
+				TriangleRasterizer t(tv[0], tv[1], tv[2]);
+				t.RecalcBounds();
 
-		//	if (tv[0].Position.Y == tv[1].Position.Y)
-		//	{
-		//		DrawTopFlatTriangle(tv);
-		//	}
-		//	else if (tv[1].Position.Y == tv[2].Position.Y)
-		//	{
-		//		DrawBottomFlatTriangle(tv);
-		//	}
-		//	else
-		//	{
-		//		// 삼각형을 두 개로 쪼갠다.
-		//		VertexData newV = tv[1];
-		//		float height = tv[0].Position.Y - tv[2].Position.Y;
-		//		float width = tv[2].Position.X - tv[0].Position.X;
+				float gradient = width / height;
+				newV.Position.X = gradient * (tv[0].Position.Y - tv[1].Position.Y) + tv[0].Position.X;
+				newV.Color = t.GetColor(newV.Position);
+				newV.UV = t.GetUV(newV.Position);
 
-		//		if (height == 0.0f)
-		//		{
-		//			return;
-		//		}
+				if (newV.Position.X > tv[1].Position.X)
+				{
+					VertexData upperTriangle[3] = { tv[0], tv[1], newV };
+					VertexData bottomTriangle[3] = { tv[1], newV, tv[2] };
+					DrawTopFlatTriangle(bottomTriangle);
+					DrawBottomFlatTriangle(upperTriangle);
+				}
+				else
+				{
+					VertexData upperTriangle[3] = { tv[0], newV, tv[1] };
+					VertexData bottomTriangle[3] = { newV, tv[1], tv[2] };
+					DrawTopFlatTriangle(bottomTriangle);
+					DrawBottomFlatTriangle(upperTriangle);
+				}
 
-		//		float gradient = width / height;
-		//		newV.Position.X = gradient * (tv[0].Position.Y - tv[1].Position.Y) + tv[0].Position.X;
+			}
 
-		//		if (newV.Position.X > tv[1].Position.X)
-		//		{
-		//			VertexData upperTriangle[3] = { tv[0], tv[1], newV };
-		//			VertexData bottomTriangle[3] = { tv[1], newV, tv[2] };
-		//			DrawTopFlatTriangle(bottomTriangle);
-		//			DrawBottomFlatTriangle(upperTriangle);
-		//		}
-		//		else
-		//		{
-		//			VertexData upperTriangle[3] = { tv[0], newV, tv[1] };
-		//			VertexData bottomTriangle[3] = { newV, tv[1], tv[2] };
-		//			DrawTopFlatTriangle(bottomTriangle);
-		//			DrawBottomFlatTriangle(upperTriangle);
-		//		}
-		//	}
-
+			/*
 		TriangleRasterizer t(
 			VertexBuffer[IndexBuffer[ti * 3]],
 			VertexBuffer[IndexBuffer[ti * 3 + 1]],
 			VertexBuffer[IndexBuffer[ti * 3 + 2]]);
+
 		t.RecalcBounds();
+
 		for (int x = t.TopLeft.X; x < t.BottomRight.X; ++x)
 		{
 			for (int y = t.TopLeft.Y; y < t.BottomRight.Y; ++y)
@@ -223,85 +269,125 @@ void WindowsRSI::DrawPrimitive(UINT InVertexSize, UINT InIndexSize)
 					}
 				}
 			}
+		*/
+
 		}
 	}
-
 }
+
 
 void WindowsRSI::DrawLine(const Vector2 & InStartPos, const Vector2 & InEndPos, const LinearColor & InColor)
 {
-	ScreenPoint startPos(InStartPos);
-	ScreenPoint endPos(InEndPos);
+	int W = InEndPos.X - InStartPos.X;
+	int H = InEndPos.Y - InStartPos.Y;
 
-	int w = Math::Abs(endPos.X - startPos.X);
-	int h = Math::Abs(endPos.Y - startPos.Y);
-	int dx = endPos.X > startPos.X ? 1 : -1;
-	int dy = endPos.Y > startPos.Y ? 1 : -1;
+	int x = InStartPos.X;
+	int y = InStartPos.Y;
 
-	if (w < 0) return;
-	if (h < 0) return;
+	int F, dF1, dF2;
 
-	int f = (h <= w) ? 2 * h - w : h - 2 * w;
-	int f1 = (h <= w) ? 2 * h : -2 * w;
-	int f2 = (h <= w) ? 2 * (h - w) : -2 * (w - h);
-
-	int y = startPos.Y;
-	int x = startPos.X;
-
-	while (true)
+	if (W < 0)
 	{
-		DrawScreenPoint(ScreenPoint(x, y), InColor);
+		if ((W * W) <= (H * H))
+		{
+			F = 2 * W + H;
 
-		if (h <= w)
-		{
-			if (x == endPos.X)
-			{
-				break;
-			}
-		}
-		else
-		{
-			if (y == endPos.Y)
-			{
-				break;
-			}
-		}
+			dF1 = 2 * W;
+			dF2 = 2 * (W + H);
 
-		if (h <= w)
-		{
-			if (f < 0)
+			for (y = InStartPos.Y; y <= InEndPos.Y; y++)
 			{
-				f += f1;
+				DrawScreenPoint(ScreenPoint(x, y), InColor.ToColor32());
+
+				if (F < 0)
+				{
+					F -= dF1;
+				}
+				else
+				{
+					F -= dF2;
+					--x;
+				}
 			}
-			else
-			{
-				f += f2;
-				y += dy;
-			}
+
 
 		}
 		else
 		{
-			if (f > 0)
-			{
-				f += f1;
-			}
-			else
-			{
-				f += f2;
-				x += dx;
-			}
-		}
+			F = 2 * H + W;
 
-		if (h <= w)
-		{
-			x += dx;
-		}
-		else
-		{
-			y += dy;
+			dF1 = 2 * H;
+			dF2 = 2 * (H + W);
+
+
+			for (x = InStartPos.X; x > InEndPos.X; x--)
+			{
+				DrawScreenPoint(ScreenPoint(x, y), InColor.ToColor32());
+
+				if (F < 0)
+				{
+					F += dF1;
+				}
+				else
+				{
+					F += dF2;
+					y++;
+				}
+			}
+
+
 		}
 	}
+	else
+	{
+		if (W <= H)
+		{
+			F = 2 * W - H;
+
+			dF1 = 2 * W;
+			dF2 = 2 * (W - H);
+
+
+			for (y = InStartPos.Y; y <= InEndPos.Y; y++)
+			{
+				DrawScreenPoint(ScreenPoint(x, y), InColor.ToColor32());
+
+				if (F < 0)
+				{
+					F += dF1;
+				}
+				else
+				{
+					++x;
+					F += dF2;
+				}
+			}
+
+		}
+		else
+		{
+			F = 2 * H - W;
+
+			dF1 = 2 * H;
+			dF2 = 2 * (H - W);
+
+			for (x = InStartPos.X; x <= InEndPos.X; ++x)
+			{
+				DrawScreenPoint(ScreenPoint(x, y), InColor.ToColor32());
+				if (F < 0)
+				{
+					F += dF1;
+				}
+				else
+				{
+					++y;
+					F += dF2;
+				}
+			}
+		}
+
+	}
+
 }
 
 void WindowsRSI::DrawVerticalLine(int InX, const LinearColor & InColor)
@@ -330,93 +416,112 @@ void WindowsRSI::DrawHorizontalLine(int InY, const LinearColor & InColor)
 	}
 }
 
+
+
 void WindowsRSI::DrawTopFlatTriangle(VertexData * tvs, bool DrawLastLine)
 {
-	float dx1 = tvs[0].Position.X - tvs[2].Position.X;
-	float dx2 = tvs[1].Position.X - tvs[2].Position.X;
-	float dy = tvs[2].Position.Y - tvs[1].Position.Y;
+	float W1 = tvs[0].Position.X - tvs[2].Position.X;
+	float H1 = tvs[0].Position.Y - tvs[2].Position.Y;
+	float Inc1 = W1 / H1;
 
-	if (dy >= 0)
+	float W2 = tvs[1].Position.X - tvs[2].Position.X;
+	float H2 = tvs[1].Position.Y - tvs[2].Position.Y;
+	float Inc2 = W2 / H2;
+
+	// 기울기에 따른 증가량 계산
+	float X1 = tvs[2].Position.X;
+	float X2 = tvs[2].Position.X;
+
+	TriangleRasterizer t(
+		tvs[0],
+		tvs[1],
+		tvs[2]);
+	t.RecalcBounds();
+
+	// 4. Y값을 증가시키며 루프
+	for (int i = tvs[2].Position.Y; i <= tvs[0].Position.Y; i++)
 	{
-		return;
-	}
+		float tempX1 = X1;
+		float tempX2 = X2;
+		float temp;
 
-	float gradient1 = dx1 / dy;
-	float gradient2 = dx2 / dy;
-
-	PutPixel(ScreenPoint(tvs[2].Position), LinearColor(1.f, 0.f, 0.f));
-	float startY = tvs[2].Position.Y;
-	float startX = tvs[2].Position.X;
-	float currentY = floorf(tvs[2].Position.Y) - 0.5f;
-	float destY = tvs[1].Position.Y;
-	while (currentY <= destY)
-	{
-		float deltaY = startY - currentY;
-		float leftX = gradient1 * deltaY + startX;
-		float rightX = gradient2 * deltaY + startX;
-		int pixelX1 = Math::FloorToInt(leftX);
-		int pixelX2 = Math::FloorToInt(rightX);
-		int pixelY = Math::FloorToInt(currentY);
-		for (int p = pixelX1; p <= pixelX2; ++p)
+		if (tempX1 > tempX2)
 		{
-			PutPixel(ScreenPoint(p, pixelY), LinearColor(1.f, 0.f, 0.f));
+			temp = tempX1;
+			tempX1 = tempX2;
+			tempX2 = temp;
 		}
-		currentY += 1.0f;
+
+		TriangleRasterizer tr(tvs[1], tvs[0], tvs[2]);
+		for (int j = tempX1; j <= tempX2; j++)
+		{
+			ScreenPoint currentPixel(j, i);
+			Vector2 currentPos = currentPixel.ToVector2();
+
+				if (HasTexture)
+				{
+					PutPixel(currentPixel, GetTextureSample(tr.GetUV(currentPos)));
+				}
+				else
+				{
+					PutPixel(currentPixel, tr.GetColor(currentPos));
+				}
+		}
+
+		X1 += Inc1;
+		X2 += Inc2;
 	}
 
-	if (DrawLastLine)
-	{
-		// 마지막 라인을 그린다.
-		int pixelX1 = Math::FloorToInt(tvs[1].Position.X);
-		int pixelX2 = Math::FloorToInt(tvs[2].Position.X);
-		int pixelY = Math::FloorToInt(destY);
-		for (int p = pixelX1; p <= pixelX2; ++p)
-		{
-			PutPixel(ScreenPoint(p, pixelY), LinearColor(1.f, 0.f, 0.f));
-		}
-	}
 }
 
 void WindowsRSI::DrawBottomFlatTriangle(VertexData * tvs)
 {
-	float dx1 = tvs[1].Position.X - tvs[0].Position.X;
-	float dx2 = tvs[2].Position.X - tvs[0].Position.X;
-	float dy = tvs[0].Position.Y - tvs[1].Position.Y;
+	float W1 = tvs[1].Position.X - tvs[0].Position.X;
+	float H1 = tvs[1].Position.Y - tvs[0].Position.Y;
+	float Inc1 = W1 / H1;
 
-	if (dy <= 0)
+	float W2 = tvs[2].Position.X - tvs[0].Position.X;
+	float H2 = tvs[2].Position.Y - tvs[0].Position.Y;
+	float Inc2 = W2 / H2;
+
+	// 기울기에 따른 증가량 계산
+	float X1 = tvs[0].Position.X;
+	float X2 = tvs[0].Position.X;
+
+
+	// 4. Y값을 줄여나가면서 루프
+	for (int i = tvs[0].Position.Y; i >= tvs[2].Position.Y; i--)
 	{
-		return;
-	}
+		float tempX1 = X1;
+		float tempX2 = X2;
+		float temp;
 
-	float gradient1 = dx1 / dy;
-	float gradient2 = dx2 / dy;
-
-	PutPixel(ScreenPoint(tvs[0].Position), LinearColor(0.f, 1.f, 0.f));
-	float startY = tvs[0].Position.Y;
-	float startX = tvs[0].Position.X;
-	float currentY = floorf(tvs[0].Position.Y) - 0.5f;
-	float destY = tvs[1].Position.Y;
-	while (currentY >= destY)
-	{
-		float deltaY = startY - currentY;
-		float leftX = gradient1 * deltaY + startX;
-		float rightX = gradient2 * deltaY + startX;
-		int startX = Math::FloorToInt(leftX);
-		int endX = Math::FloorToInt(rightX);
-		int pixelY = Math::FloorToInt(currentY);
-		for (int p = startX; p <= endX; ++p)
+		if (tempX1 > tempX2)
 		{
-			PutPixel(ScreenPoint(p, pixelY), LinearColor(0.f, 1.f, 0.f));
+			temp = tempX1;
+			tempX1 = tempX2;
+			tempX2 = temp;
 		}
-		currentY -= 1.0f;
+		TriangleRasterizer tr(tvs[0], tvs[1], tvs[2]);
+		for (int j = tempX1; j <= tempX2; j++)
+		{
+			ScreenPoint currentPixel(j, i);
+			Vector2 currentPos = currentPixel.ToVector2();
+
+			if (HasTexture)
+			{
+				PutPixel(currentPixel, GetTextureSample(tr.GetUV(currentPos)));
+			}
+			else
+			{
+				PutPixel(currentPixel, tr.GetColor(currentPos));
+			}
+
+		}
+
+		X1 -= Inc1;
+		X2 -= Inc2;
+
 	}
 
-	// 마지막 라인을 그린다.
-	int pixelX1 = Math::FloorToInt(tvs[0].Position.X);
-	int pixelX2 = Math::FloorToInt(tvs[1].Position.X);
-	int pixelY = Math::FloorToInt(destY);
-	for (int p = pixelX1; p <= pixelX2; ++p)
-	{
-		PutPixel(ScreenPoint(p, pixelY), LinearColor(0.f, 1.f, 0.f));
-	}
 }

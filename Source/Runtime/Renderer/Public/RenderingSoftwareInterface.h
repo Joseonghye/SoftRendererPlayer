@@ -43,4 +43,5 @@ public:
 
 	virtual int SetTexture(RSITexture& InRSITexture) = 0;
 
+
 };
